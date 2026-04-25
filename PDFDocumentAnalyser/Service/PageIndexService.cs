@@ -20,7 +20,7 @@ namespace PDFDocumentAnalyser.Service
         }
 
         // 1. PDF Upload karo
-        public async Task<string> UploadDocumentAsync(string filePath)
+        public async Task<string> UploadDocumentAsync(string filePath,string fileName)
         {
             /* using var form = new MultipartFormDataContent();
              var fileBytes = await File.ReadAllBytesAsync(filePath);
@@ -35,7 +35,7 @@ namespace PDFDocumentAnalyser.Service
             using (var fileContent = new StreamContent(fileStream))
             {
                 fileContent.Headers.ContentType = new MediaTypeHeaderValue("application/pdf");
-                content.Add(fileContent, "file", "test.pdf");
+                content.Add(fileContent, "file", fileName + ".pdf");
                 client.DefaultRequestHeaders.Add("api_key", pageIndexKey);
 
                 HttpResponseMessage response = await client.PostAsync("https://api.pageindex.ai/doc/", content);
@@ -88,7 +88,7 @@ namespace PDFDocumentAnalyser.Service
                 doc_id: docId,
                 stream: false
             );
-
+            
             var response = await _http.PostAsJsonAsync(
                 $"{BaseUrl}/chat/completions", request);
             response.EnsureSuccessStatusCode();
@@ -98,8 +98,8 @@ namespace PDFDocumentAnalyser.Service
             var pageIndexAPIResponse = result!.choices[0].message.content;
 
 
-            //return await ChatReponseFormatter(pageIndexAPIResponse);
-            return pageIndexAPIResponse;
+            return await ChatReponseFormatter(pageIndexAPIResponse);
+            //return pageIndexAPIResponse;
         }
 
         public async Task<string> ChatReponseFormatter(string AiNormatTextANS)
@@ -132,5 +132,21 @@ namespace PDFDocumentAnalyser.Service
             return html.Replace("```html", "").Replace("```", "").Trim();
         }
 
+        // 4. Remove document
+        public async Task<bool> DeleteDocumentAsync(string docId)
+        {
+           // _http.DefaultRequestHeaders.Add("api_key", pageIndexKey);
+            var response = await _http.DeleteAsync($"{BaseUrl}/doc/{docId}/");
+            
+            if (response.IsSuccessStatusCode)
+            {
+                return true;
+            }
+            else
+            {
+                var errorMessage = await response.Content.ReadAsStringAsync();
+                throw new Exception($"Failed to delete document: {errorMessage}");
+            }
+        }
     }
 }

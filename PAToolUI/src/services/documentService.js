@@ -3,9 +3,10 @@
  * Handles all API calls related to document upload and processing
  */
 
-const API_BASE_URL = 'http://localhost:5135/api'
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
 const UPLOAD_ENDPOINT = `${API_BASE_URL}/document/upload`
 const ASK_ENDPOINT = `${API_BASE_URL}/document/ask`
+const REMOVE_ENDPOINT = `${API_BASE_URL}/document/delete`
 /**
  * Upload a document file to the server
  * @param {File} file - The file object to upload
@@ -21,8 +22,11 @@ export const uploadDocument = async (file) => {
     const formData = new FormData()
     formData.append('file', file)
 
+    // Construct URL with fileName query parameter
+    const uploadUrl = `${UPLOAD_ENDPOINT}?fileName=${encodeURIComponent(file.name)}`
+
     // Make the API request
-    const response = await fetch(UPLOAD_ENDPOINT, {
+    const response = await fetch(uploadUrl, {
       method: 'POST',
       body: formData,
       headers: {
@@ -30,7 +34,7 @@ export const uploadDocument = async (file) => {
         'Accept': 'application/json',
       },
     })
-    console.log('response ::',response); 
+    console.log('response ::', response)
     // Check if response is ok
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}))
@@ -106,6 +110,48 @@ export const sendChatMessage = async (message, doc_id) => {
       success: false,
       error: error.message,
       message: error.message || 'Failed to send message',
+    }
+  }
+}
+
+/**
+ * Remove a document from the server
+ * @param {string} doc_id - The document ID to remove
+ * @returns {Promise<Object>} - The response from the server
+ */
+export const removeDocument = async (doc_id) => {
+  try {
+    if (!doc_id) {
+      throw new Error('Document ID is required')
+    }
+
+    const response = await fetch(`${REMOVE_ENDPOINT}/${doc_id}`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+    })
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}))
+      throw new Error(
+        errorData.message || `Remove failed with status ${response.status}`
+      )
+    }
+
+    const data = await response.json()
+    return {
+      success: true,
+      data: data,
+      message: 'Document removed successfully',
+    }
+  } catch (error) {
+    console.error('Document remove error:', error)
+    return {
+      success: false,
+      error: error.message,
+      message: error.message || 'Failed to remove document',
     }
   }
 }

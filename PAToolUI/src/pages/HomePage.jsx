@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import '../styles/HomePage.css'
-import { uploadDocument, sendChatMessage } from '../services/documentService'
+import { uploadDocument, sendChatMessage, removeDocument } from '../services/documentService'
 
 export default function HomePage() {
   const [messages, setMessages] = useState([])
@@ -115,6 +115,36 @@ export default function HomePage() {
     fileInputRef.current?.click()
   }
 
+  const handleRemoveDocument = async () => {
+    if (!documentId) return
+
+    setIsUploading(true)
+    const result = await removeDocument(documentId)
+
+    if (result.success) {
+      setUploadedFile(null)
+      setDocumentId(null)
+      const successMessage = {
+        id: Date.now(),
+        type: 'system',
+        text: '✓ Document removed successfully',
+        timestamp: new Date(),
+      }
+      setMessages((prev) => [...prev, successMessage])
+    } else {
+      setUploadError(result.message)
+      const errorMessage = {
+        id: Date.now(),
+        type: 'system',
+        text: `✗ Failed to remove document: ${result.message}`,
+        timestamp: new Date(),
+      }
+      setMessages((prev) => [...prev, errorMessage])
+    }
+
+    setIsUploading(false)
+  }
+
   return (
     <div className="home-page">
       <div className="container">
@@ -153,7 +183,7 @@ export default function HomePage() {
                       className={`message message-${message.type}`}
                     >
                       <div className="message-content">
-                        <p>{message.text}</p>
+                        <p dangerouslySetInnerHTML={{ __html: message.text }}></p>
                         <span className="message-time">
                           {message.timestamp.toLocaleTimeString([], {
                             hour: '2-digit',
@@ -272,7 +302,8 @@ export default function HomePage() {
                     </div>
                   </div>
                   <button
-                    onClick={() => setUploadedFile(null)}
+                    onClick={handleRemoveDocument}
+                    disabled={isUploading}
                     className="remove-btn"
                     title="Remove file"
                   >
