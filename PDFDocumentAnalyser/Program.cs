@@ -23,12 +23,9 @@ builder.Services.AddControllers();
 
 var app = builder.Build();
 
+app.UseHttpsRedirection();
 // Configure the HTTP request pipeline.
-
-app.UseAuthorization();
-
-app.MapControllers();
 app.UseCors(); // Add this line before app.Run()
-
-
+app.UseAuthorization();
+app.MapControllers();
 app.Run();
