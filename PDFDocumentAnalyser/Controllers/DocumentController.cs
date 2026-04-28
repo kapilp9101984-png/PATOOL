@@ -41,9 +41,18 @@ namespace PDFDocumentAnalyser.Controllers
         public async Task<IActionResult> Ask(
             [FromBody] ChatRequest request)
         {
-            var answer = await _pageIndex.ChatAsync(
-                request.messages[request.messages.Count - 1].content, request.doc_id);
-            return Ok(new { answer });
+            try
+            {
+
+                var answer = await _pageIndex.ChatAsync(
+                    request.messages[request.messages.Count - 1].content, request.doc_id);
+                return Ok(new { answer });
+            }
+            catch (Exception ex)
+            {
+                var answer = ex.Message;
+                return Ok(new { answer });
+            }
         }
 
         [HttpDelete("delete/{doc_id}")]

@@ -20,7 +20,7 @@ namespace PDFDocumentAnalyser.Service
         }
 
         // 1. PDF Upload karo
-        public async Task<string> UploadDocumentAsync(string filePath,string fileName)
+        public async Task<string> UploadDocumentAsync(string filePath, string fileName)
         {
             /* using var form = new MultipartFormDataContent();
              var fileBytes = await File.ReadAllBytesAsync(filePath);
@@ -83,28 +83,36 @@ namespace PDFDocumentAnalyser.Service
         public async Task<string> ChatAsync(string question,
         string? docId = null)
         {
-            var request = new ChatRequest(
-                messages: [new ChatMessage("user", question)],
-                doc_id: docId,
-                stream: false
-            );
-            
-            var response = await _http.PostAsJsonAsync(
-                $"{BaseUrl}/chat/completions", request);
-            response.EnsureSuccessStatusCode();
+            try
+            {
+                var request = new ChatRequest(
+               messages: [new ChatMessage("user", question)],
+               doc_id: docId,
+               stream: false
+           );
 
-            var result = await response.Content
-                .ReadFromJsonAsync<ChatResponse>();
-            var pageIndexAPIResponse = result!.choices[0].message.content;
+                var response = await _http.PostAsJsonAsync(
+                    $"{BaseUrl}/chat/completions", request);
+                response.EnsureSuccessStatusCode();
+
+                var result = await response.Content
+                    .ReadFromJsonAsync<ChatResponse>();
+                var pageIndexAPIResponse = result!.choices[0].message.content;
 
 
-            return await ChatReponseFormatter(pageIndexAPIResponse);
+                return await ChatReponseFormatter(pageIndexAPIResponse);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message, ex);
+            }
+
             //return pageIndexAPIResponse;
         }
 
         public async Task<string> ChatReponseFormatter(string AiNormatTextANS)
         {
-           
+
             _http.DefaultRequestHeaders.Add("Authorization", $"Bearer {GroqKey}");
 
 
@@ -135,9 +143,9 @@ namespace PDFDocumentAnalyser.Service
         // 4. Remove document
         public async Task<bool> DeleteDocumentAsync(string docId)
         {
-           // _http.DefaultRequestHeaders.Add("api_key", pageIndexKey);
+            // _http.DefaultRequestHeaders.Add("api_key", pageIndexKey);
             var response = await _http.DeleteAsync($"{BaseUrl}/doc/{docId}/");
-            
+
             if (response.IsSuccessStatusCode)
             {
                 return true;
