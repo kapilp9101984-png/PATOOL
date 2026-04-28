@@ -15,7 +15,7 @@ builder.Services.AddCors(options =>
 // Add services to the container.
 builder.Services.AddHttpClient<PageIndexService>(client =>
 {
-    client.DefaultRequestHeaders.Add("api_key",
+    client.DefaultRequestHeaders.TryAddWithoutValidation("api_key",
         builder.Configuration["PageIndex:ApiKey"]);
 });
 

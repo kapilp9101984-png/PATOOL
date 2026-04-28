@@ -35,8 +35,8 @@ namespace PDFDocumentAnalyser.Service
             using (var fileContent = new StreamContent(fileStream))
             {
                 fileContent.Headers.ContentType = new MediaTypeHeaderValue("application/pdf");
-                content.Add(fileContent, "file", fileName + ".pdf");
-                client.DefaultRequestHeaders.Add("api_key", pageIndexKey);
+                content.Add(fileContent, "file", fileName );
+                client.DefaultRequestHeaders.TryAddWithoutValidation("api_key", pageIndexKey);
 
                 HttpResponseMessage response = await client.PostAsync("https://api.pageindex.ai/doc/", content);
                 string responseString = await response.Content.ReadAsStringAsync();
