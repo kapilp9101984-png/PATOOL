@@ -56,6 +56,8 @@ namespace PDFDocumentAnalyser.Service
         public async Task<DocumentStatusResponse> GetDocumentStatusAsync(
             string docId, string type = "tree")
         {
+            _http.DefaultRequestHeaders.Remove("api_key");
+            _http.DefaultRequestHeaders.TryAddWithoutValidation("api_key", pageIndexKey);
             var response = await _http.GetAsync(
                 $"{BaseUrl}/doc/{docId}/?type={type}");
             response.EnsureSuccessStatusCode();

@@ -13,11 +13,11 @@ builder.Services.AddCors(options =>
     });
 });
 // Add services to the container.
-builder.Services.AddHttpClient<PageIndexService>(client =>
-{
+/*builder.Services.AddHttpClient<PageIndexService>(client =>
+{    
     client.DefaultRequestHeaders.TryAddWithoutValidation("api_key",
         builder.Configuration["PageIndex:ApiKey"]);
-});
+});*/
 
 builder.Services.AddControllers();
 
